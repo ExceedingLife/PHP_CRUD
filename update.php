@@ -1,5 +1,4 @@
 <?php
-    error_reporting(E_ALL & ~E_NOTICE);
   // include config for Database
     require_once "php/config.php";
 
@@ -11,38 +10,39 @@
     if(isset($_POST["id"]) && !empty($_POST["id"])) {
       // Get hidden input value.
         $id = $_POST["id"];
+
         // Validate name entered
           $input_name = trim($_POST["name"]);
-          if(empty($input_name)) {
-              $nameerror = "Name is required. ";
+           if(empty($input_name)) {
+               $nameerror = "Name is required. ";
           } elseif (!filter_var($input_name, FILTER_VALIDATE_REGEXP,
               array("options"=>array("regexp"=>"/^[a-zA-Z\s]+$/")))) {
               $nameerror = "Please enter a valid name. ";
-          } else {
+           } else {
               //$namesafe = mysqli_real_escape_string($connection, $input_name);
               $name = $input_name;
           }
           // Validate language entered
           $input_lang = trim($_POST["language"]);
-          if(empty($input_lang)) {
-              $langerror = "Please enter a language. ";
-          } else {
+           if(empty($input_lang)) {
+               $langerror = "Please enter a language. ";
+           } else {
               $language = $input_lang;
           }
           // Get current Date and Time
           $currentDate = date("Y-m-d H:i:s");
           // OR
-          $datetimeobj = new DateTime();
-          $datetimeobj->format("Y-m-d H:i:s");
+          //$datetimeobj = new DateTime();
+         // $datetimeobj->format("Y-m-d H:i:s");
 
       // Check and make sure no errors before inserted into database.
-          //if(empty($nameerror) && empty($langerror) && empty($dateerror)) {
+          //if(empty($nameerror) && empty($langerror)) {
 
             if($name != "" && $language != "") {
             // Prepare an UPDATE sql statement.
                 $sql = "UPDATE users SET name=:name, language=:language, " .
                        "date=:date WHERE id=:id";
-                    error_log($sql);
+
                 if($stmt = $pdoConnect->prepare($sql)) {
                   // Bind variables to prepared statement as parameters.
                     $stmt->bindParam(":name", $param_name);
@@ -50,9 +50,9 @@
                     $stmt->bindParam(":date", $param_date);
                     $stmt->bindParam(":id", $param_id);
                     // Set parameters
-                    $para_name = $name;
-                    $param_lang = $lang;
-                    $param_date = $date;
+                    $param_name = $name;
+                    $param_lang = $language;
+                    $param_date = $currentDate;
                     $param_id = $id;
                     // Attempt to execute prepared statement
                     if($stmt->execute()) {
@@ -79,7 +79,6 @@
           if(isset($_GET["id"]) && !empty(trim($_GET["id"]))) {
             // GET URL parameter
               $id = trim($_GET["id"]);
-
             // Prepare SELECT statement
               $sql = "SELECT * FROM users WHERE id = :id";
               if($stmt = $pdoConnect->prepare($sql)) {
@@ -97,14 +96,13 @@
                           $name = $row["name"];
                           $language = $row["language"];
                           $userdate = $row["date"];
-
                       } else {
                         // URL doesn't contain valid 'id' parameter
                             header("location: error.php");
                             exit();
                       }
                   } else {
-                        echo "Something went wrong with UPDATE, try again later.";
+                        echo "Something went wrong with SELECT by id, try again later.";
                   }
               }
               // Close $stmt statement
@@ -163,7 +161,7 @@
                           <div class="form-group row">
                               <label for="txtname" class="col-sm-3"><b>Name:</b></label>
                               <div class="col-sm-9">
-                                  <input type="text" class="form-control" id="txtname" name="txtname"
+                                  <input type="text" class="form-control" id="txtname" name="name"
                                    value="<?php echo $row["name"]; ?>" />
                               </div>
                           </div>
@@ -171,7 +169,7 @@
                           <div class="form-group row">
                               <label for="txtlang" class="col-sm-3"><b>Language:</b></label>
                               <div class="col-sm-9">
-                                  <input type="text" class="form-control" id="txtlang" name="txtlang"
+                                  <input type="text" class="form-control" id="txtlang" name="language"
                                    value="<?php echo $row["language"]; ?>" />
                               </div>
                           </div>
@@ -179,7 +177,7 @@
                           <div class="form-group row">
                               <label for="txtdate" class="col-sm-3"><b>Date:</b></label>
                               <div class="col-sm-9">
-                                  <input type="text" class="form-control" id="txtdate" name="txtdate"
+                                  <input type="text" class="form-control" id="txtdate" name="date"
                                    disabled value="<?php echo $row["date"]; ?>" />
                               </div>
                           </div>
@@ -187,7 +185,7 @@
 
                           <input type="hidden" name="id" value="<?php echo $id; ?>" />
 
-                          <input type="submit" class="btn btn-lg btn-primary btn-block" name="submit" value="Update"/>
+                          <button type="submit" class="btn btn-lg btn-primary btn-block" name="submit">Update</button>
                           <a href="index.php" class="btn btn-lg btn-danger btn-block" role="button">Cancel</a>
                       </form>
                   </div>
